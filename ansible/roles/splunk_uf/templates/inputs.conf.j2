@@ -1,0 +1,36 @@
+[monitor:///var/log/auth.log]
+index = linux_secure
+sourcetype = syslog
+disabled = 0
+
+[monitor:///var/log/secure]
+index = linux_secure
+sourcetype = syslog
+disabled = 0
+
+[monitor:///var/log]
+whitelist=(\.log|log$|messages|mesg$|cron$|acpid$|\.out)
+blacklist = (auth|secure|lastlog|anaconda|vmware-vmsvc|wtmp|vmware-network)
+index = linux
+sourcetype = syslog
+disabled = 0
+
+[monitor:///var/adm]
+whitelist=(\.log|log$|messages)
+index = linux
+sourcetype = syslog
+disabled = 0
+
+[monitor:///root/.bash_history]
+index = linux_secure
+sourcetype = syslog
+disabled = 0
+sourcetype = bash_history
+
+[monitor:///home/*/.bash_history]
+index = linux_secure
+sourcetype = syslog
+disabled = 0
+sourcetype = bash_history
+
+

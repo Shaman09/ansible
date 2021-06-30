@@ -1,0 +1,74 @@
+---
+- name: Create Splunk group
+  group:
+    name: "{{ splunk_forwarder_group }}"
+    gid: "{{ splunk_forwarder_gid }}"
+    state: present
+
+- name: Create Splunk user
+  user:
+    name: "{{ splunk_forwarder_user }}"
+    group: "{{ splunk_forwarder_group }}"
+    uid: "{{ splunk_forwarder_uid }}"
+    state: present
+
+- name: Download the Splunk package (Debian/Ubuntu)
+  get_url:
+    url: "{{ splunk_deb }}"
+    dest: "/tmp/{{ splunk_forwarder_deb }}"
+    #hecksum: "{{ splunk_deb_checksum }}"
+  when: ansible_os_family == "Debian"
+
+- name: Install Splunk (Debian/Ubuntu)
+  apt:
+    deb: "/tmp/{{ splunk_forwarder_deb }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Download the Splunk package (CentOS)
+  get_url:
+    url: "{{ splunk_rpm }}"
+    dest: "/tmp/{{ splunk_forwarder_rpm }}"
+    #checksum: "{{ splunk_rpm_checksum }}"
+  when: ansible_os_family == "RedHat"
+
+- name: Install Splunk (python2 yum)
+  yum:
+    name: "/tmp/{{ splunk_forwarder_rpm }}"
+    state: present
+  when: ansible_os_family == "RedHat" and ansible_facts.python.version.major | int < 3
+
+- name: Install Splunk (python3 dnf)
+  dnf:
+    name: "/tmp/{{ splunk_forwarder_rpm }}"
+    disable_gpg_check: true
+    state: present
+  when: ansible_os_family == "RedHat" and ansible_facts.python.version.major | int >= 3
+
+
+- name: Set source log configuration
+  command: /usr/bin/setfacl -m "u:splunk:r-x" /var/log 
+  command: /usr/bin/setfacl -m "u:splunk:r--" /var/log/*
+  command: /usr/bin/setfacl -m d:user:splunk:r /var/log
+  command: /usr/bin/setfacl -m "u:splunk:--x" /root
+  #command: /usr/bin/setfacl -m "u:splunk:r--" /root/.bash_history
+  #command: /usr/bin/setfacl -m "u:splunk:r--" /home/*/.bash_history
+
+
+  #- name: New instance configuration
+  #command: /opt/splunkforwarder/bin/splunk enable boot-start -systemd-managed 1 --gen-and-print-passwd --accept-license --answer-yes --auto-ports --no-prompt || (echo "could not start" && exit 1)
+  
+- name: Start Splunk Forwarder as a service
+  service: name=SplunkForwarder.service state=started enabled=yes
+
+
+- name: Set directory permissions
+  file:
+    path: /opt/splunkforwarder
+    owner: splunk
+    group: splunk
+    mode: '0755'
+
+- name: Set Deployment Server
+  command: /opt/splunkforwarder/bin/splunk set deploy-poll vmpSplunkDS1.softservecom.com:8089
+

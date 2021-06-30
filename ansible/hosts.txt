@@ -1,0 +1,4 @@
+[amazon]
+#splunk1         ansible_host=54.93.88.2         ansible_user=ec2-user   ansible_ssh_private_key_file=/home/oboadmin/.ssh/obobko_ansible1.pem
+splunk2         ansible_host=3.127.215.90         ansible_user=ec2-user   ansible_ssh_private_key_file=/home/ec2-user/.ssh/obobko1
+
