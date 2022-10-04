@@ -1,0 +1,15 @@
+---
+- name: My Playbook
+  hosts: aws_hosts
+  become: yes
+
+  vars:
+   mytext: "hello from shaman"
+
+  tasks:
+  - name: Ping test
+    ping:
+
+  - include: create_folders.yml
+  - include: create_files.yml
+

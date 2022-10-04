@@ -1,0 +1,30 @@
+---
+- name: Download and Install Crowdstrike Agent
+  hosts: linux2
+  become: yes
+
+  vars:
+   source_folder: /Users/obobko/Desktop/keys/ansible/
+   destin_folder: /home/ec2-user
+
+  tasks:
+   - name: Copy Falcon Sensor to Server
+     copy: src={{ item }} dest={{ destin_folder }} mode=777
+     loop:
+        - "falcon-sensor-6.33.0-13003.el8.x86_64.rpm"
+
+   - rpm_key:
+       state: present
+       key: https://www.redhat.com/security/data/fd431d51.txt
+
+   - name: Install Falcon-Sensor Agent
+     yum: name=/home/ec2-user/falcon-sensor-6.33.0-13003.el8.x86_64.rpm state=present
+     #ignore_errors: yes
+     #when: is_commvault_installed == 0
+
+   - name: Set CID on the sensor
+     shell: /opt/CrowdStrike/falconctl -s --cid=B606A6574E214FEB975EA3EA217B6583-98
+
+   - name: Start Falcon-Sensor Agent
+     service: name=falcon-sensor.service state=started enabled=yes
+     ignore_errors: yes
