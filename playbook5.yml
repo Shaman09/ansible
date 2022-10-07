@@ -1,7 +1,0 @@
----
-- name: Install default Apache server
-  hosts: linux2
-  become: yes
-  
-  roles:
-    - deploy_apache_web
